@@ -15,7 +15,7 @@ hook.Add("PhysgunDrop", "PropProtectThrow", function(ply, ent)
 	ent:SetPos(ent:GetPos())
 end)
 
-hood.Add("EntityTakeDamage", "PropProtectDmg", function(ent, dmginfo)
+hook.Add("EntityTakeDamage", "PropProtectDmg", function(ent, dmginfo)
 	if ent:IsPlayer() and dmginfo:GetDamageType() == DMG_CRUSH then
 		dmginfo:ScaleDamage(0.0)
 	end
@@ -24,6 +24,11 @@ hood.Add("EntityTakeDamage", "PropProtectDmg", function(ent, dmginfo)
 	if attacker:IsVehicle() then
 		dmginfo:SetDamage(0.0)
 	end
+end)
+
+hook.Add("PlayerSpawnedVehicle", "PropProtectCollide", function(ply, victim)
+	-- Needs to be tested
+	victim:SetCollisionGroup(COLLISION_GROUP_WEAPON and COLLISION_GROUP_DEBRIS)
 end)
 
 local function freezeReal(ent)
@@ -80,7 +85,7 @@ hook.Add("OnEntityCreated", "PropProtectSpawn", function(ent)
 end)
 
 -- Old blacklisted prop exploit
-hook.Add("PlayerSpawnedProp", "PropProtectExploit", function()
+hook.Add("PlayerSpawnedProp", "PropProtectExploit", function(ply, model, ent)
 	if string.match( model,  ".+%/../" ) and IsValid( ent ) then
 		ent:Remove()
 		DarkRP.notify( ply, 1, 4, "Please don't be a minge!" )
