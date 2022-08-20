@@ -1,34 +1,43 @@
-if (!SERVER) then return end
-
 hook.Add("PhysgunPickup", "PropProtectPickup", function(ply, ent)
-	if (ent:GetClass() != "prop_physics") then return end
+	if dpp.physTouch then
+		if (ent:GetClass() != "prop_physics") then return end
 
-	ent.oldColor = ent:GetColor()
-	ent.oldMat = ent:GetMaterial()
+		ent.oldColor = ent:GetColor()
+		ent.oldMat = ent:GetMaterial()
 
-	ent:SetColor(Color(ent.oldColor.r, ent.oldColor.g, ent.oldColor.b, 100))
-	ent:SetCollisionGroup(COLLISION_GROUP_WORLD)
+		ent:SetColor(dpp.propColor)
+		ent:SetCollisionGroup(COLLISION_GROUP_WORLD)
+		ent:SetRenderMode(RENDERMODE_TRANSALPHA)
+	end
 end)
 
 hook.Add("PhysgunDrop", "PropProtectThrow", function(ply, ent)
-	if not IsValid(ent) then return end
-	ent:SetPos(ent:GetPos())
+	if dpp.propVelocity then
+		if not IsValid(ent) then return end
+		ent:SetPos(ent:GetPos())
+	end
 end)
 
 hook.Add("EntityTakeDamage", "PropProtectDmg", function(ent, dmginfo)
-	if ent:IsPlayer() and dmginfo:GetDamageType() == DMG_CRUSH then
-		dmginfo:ScaleDamage(0.0)
+	if dpp.propDamage then
+		if ent:IsPlayer() and dmginfo:GetDamageType() == DMG_CRUSH then
+			dmginfo:ScaleDamage(0.0)
+		end
 	end
-
-	local attacker = dmginfo:GetInflictor()
-	if attacker:IsVehicle() then
-		dmginfo:SetDamage(0.0)
+	
+	if dpp.vehicleDamage then
+		local attacker = dmginfo:GetInflictor()
+		if attacker:IsVehicle() then
+			dmginfo:SetDamage(0.0)
+		end
 	end
 end)
 
 hook.Add("PlayerSpawnedVehicle", "PropProtectCollide", function(ply, victim)
 	-- Needs to be tested
-	victim:SetCollisionGroup(COLLISION_GROUP_WEAPON and COLLISION_GROUP_DEBRIS)
+	if dpp.vehicleCollide then
+		victim:SetCollisionGroup(COLLISION_GROUP_WEAPON and COLLISION_GROUP_DEBRIS)
+	end
 end)
 
 local function freezeReal(ent)
@@ -36,7 +45,9 @@ local function freezeReal(ent)
 		timer.Destroy(ent:EntIndex().."_waitForPlayersToLeaveToFreezeReal")
 	end
 	
-	ent:SetColor(Color(ent.oldColor.r, ent.oldColor.g, ent.oldColor.b, 255))
+	local oldColorFreeze = Color(255, 255, 255)
+	
+	ent:SetColor(oldColorFreeze)
 	ent:SetMaterial(ent.oldMat)
 	ent:SetCollisionGroup(COLLISION_GROUP_NONE)
 end
@@ -74,20 +85,24 @@ hook.Add("OnPhysgunFreeze", "PropProtectFreeze", function(weap, physobj, ent, pl
 end)
 
 hook.Add("OnEntityCreated", "PropProtectSpawn", function(ent)
-	if (ent:GetClass() != "prop_physics") then return end
-	
-	ent.oldColor = ent.oldColor or ent:GetColor()
-	ent.oldMat = ent.oldMat or ent:GetMaterial()
-	
-	ent:SetRenderMode(RENDERMODE_TRANSALPHA)
-	ent:SetColor(Color(ent.oldColor.r, ent.oldColor.g, ent.oldColor.b, 100))
-	ent:SetCollisionGroup(COLLISION_GROUP_WORLD)
+	if dpp.propSpawn then
+		if (ent:GetClass() != "prop_physics") then return end
+		
+		ent.oldColor = ent.oldColor or ent:GetColor()
+		ent.oldMat = ent.oldMat or ent:GetMaterial()
+
+		ent:SetRenderMode(RENDERMODE_TRANSALPHA)
+		ent:SetColor(dpp.propColor)
+		ent:SetCollisionGroup(COLLISION_GROUP_WORLD)
+	end
 end)
 
 -- Old blacklisted prop exploit
 hook.Add("PlayerSpawnedProp", "PropProtectExploit", function(ply, model, ent)
-	if string.match( model,  ".+%/../" ) and IsValid( ent ) then
-		ent:Remove()
-		DarkRP.notify( ply, 1, 4, "Please don't be a minge!" )
+	if dpp.propExploit then
+		if string.match( model,  ".+%/../" ) and IsValid( ent ) then
+			ent:Remove()
+			DarkRP.notify( ply, 1, 4, "Please don't be a minge!" )
+		end
 	end
 end)
