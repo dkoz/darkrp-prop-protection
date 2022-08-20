@@ -11,10 +11,22 @@ hook.Add("PhysgunPickup", "PropProtectPickup", function(ply, ent)
 end)
 
 hook.Add("PhysgunDrop", "PropProtectThrow", function(ply, ent)
+	if not IsValid(ent) then return end
+	ent:SetPos(ent:GetPos())
+end)
+
+hood.Add("EntityTakeDamage", "PropProtectDmg", function(ent, dmginfo)
+	if ent:IsPlayer() and dmginfo:GetDamageType() == DMG_CRUSH then
+		dmginfo:ScaleDamage(0.0)
+	end
+
+	local attacker = dmginfo:GetInflictor()
+	if attacker:IsVehicle() then
+		dmginfo:SetDamage(0.0)
+	end
 end)
 
 local function freezeReal(ent)
-
 	if (timer.Exists(ent:EntIndex().."_waitForPlayersToLeaveToFreezeReal")) then
 		timer.Destroy(ent:EntIndex().."_waitForPlayersToLeaveToFreezeReal")
 	end
@@ -22,7 +34,6 @@ local function freezeReal(ent)
 	ent:SetColor(Color(ent.oldColor.r, ent.oldColor.g, ent.oldColor.b, 255))
 	ent:SetMaterial(ent.oldMat)
 	ent:SetCollisionGroup(COLLISION_GROUP_NONE)
-	
 end
 
 local function waitForPlayersToLeave(ent)
@@ -66,4 +77,12 @@ hook.Add("OnEntityCreated", "PropProtectSpawn", function(ent)
 	ent:SetRenderMode(RENDERMODE_TRANSALPHA)
 	ent:SetColor(Color(ent.oldColor.r, ent.oldColor.g, ent.oldColor.b, 100))
 	ent:SetCollisionGroup(COLLISION_GROUP_WORLD)
+end)
+
+-- Old blacklisted prop exploit
+hook.Add("PlayerSpawnedProp", "PropProtectExploit", function()
+	if string.match( model,  ".+%/../" ) and IsValid( ent ) then
+		ent:Remove()
+		DarkRP.notify( ply, 1, 4, "Please don't be a minge!" )
+	end
 end)
