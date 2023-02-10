@@ -1,4 +1,6 @@
 hook.Add("PhysgunPickup", "PropProtectPickup", function(ply, ent)
+	if FPP and FPP.UnGhost then FPP.UnGhost(ply, ent) end
+	if ent.CPPICanPhysgun and not ent:CPPICanPhysgun(ply) then return end
 	if dpp.physTouch then
 		if (ent:GetClass() != "prop_physics") then return end
 
@@ -31,6 +33,24 @@ hook.Add("EntityTakeDamage", "PropProtectDmg", function(ent, dmginfo)
 			dmginfo:SetDamage(0.0)
 		end
 	end
+end)
+
+hook.Add("PlayerSpawnedProp", "PropProtectSpawned", function(ply, model, ent)
+	-- Old blacklisted prop exploit
+	if dpp.propExploit then
+		if string.match( model,  ".+%/../" ) and IsValid( ent ) then
+			ent:Remove()
+			DarkRP.notify( ply, 1, 4, "Please don't be a minge!" )
+		end
+	end
+	
+	local min, max = ent:GetCollisionBounds()
+	local diff = max - min
+	local cubicUnits = math.Round(diff.x * diff.y * diff.z)
+	if dpp.maxCubicUnits > 0 and cubicUnits > dpp.maxCubicUnits then
+		DPROP.Notify(ply, 1, 4, "That prop is too big to spawn!" )
+		ent:Remove()
+	end 
 end)
 
 hook.Add("PlayerSpawnedVehicle", "PropProtectCollide", function(ply, victim)
@@ -94,15 +114,5 @@ hook.Add("OnEntityCreated", "PropProtectSpawn", function(ent)
 		ent:SetRenderMode(RENDERMODE_TRANSALPHA)
 		ent:SetColor(dpp.propColor)
 		ent:SetCollisionGroup(COLLISION_GROUP_WORLD)
-	end
-end)
-
--- Old blacklisted prop exploit
-hook.Add("PlayerSpawnedProp", "PropProtectExploit", function(ply, model, ent)
-	if dpp.propExploit then
-		if string.match( model,  ".+%/../" ) and IsValid( ent ) then
-			ent:Remove()
-			DarkRP.notify( ply, 1, 4, "Please don't be a minge!" )
-		end
 	end
 end)

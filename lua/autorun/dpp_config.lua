@@ -16,3 +16,9 @@ dpp.propVelocity		= true
 dpp.vehicleCollide		= true
 -- Enable/Disable known prop exploit in DarkRP blacklist
 dpp.propExploit			= true
+
+
+-- Sets maximum cubic units size of prop allowed. 
+dpp.maxCubicUnits = 1450000
+-- Sets time to clear all decals.
+dpp.clearDecals = 120
